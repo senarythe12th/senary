@@ -1,0 +1,192 @@
+<doctype html>
+<html>
+<head>
+    <title>JSIX Clock</title>
+</head>
+<body>
+    <canvas id="canvas" width="1000" height="1000"></canvas>
+</body>
+
+
+<script>
+
+window.onload = function () {
+    // make clock bigger or smaller by twiddling this
+    var clockReferenceSize = 200;
+
+    // constants
+    var numbMillisecondsPerDay = 24 * 60 * 60 * 1000;
+    var TAU = 2 * Math.PI;  // oh yeah, I went there.
+
+    var nilHocQuaDailyMultiplier  =   1;    // Your nilHocQuaDaily  hand rotates once every day           and ticks off unhocciadays.
+    var unHocQuaDailyMultiplier   =  36;    // Your unHocQuaDaily   hand rotates once every unhocciaday   and ticks off bihocciadays.
+    var biHocQuaDailyMultiplier   =  36;    // Your biHocqQaDaily   hand rotates once every bihocciaday   and ticks off trihocciadays.
+    var triHocQuaDailyMultiplier  =  36;    // Your triHocQuaDaily  hand rotates once every trihocciaday  and ticks off quadhocciadays.
+    var quadHocQuaDailyMultiplier =  36;    // Your quadHocQuaDaily hand rotates once every quadhocciaday and ticks off penthocciadays.
+    var pentHocQuaDailyMultiplier =   6;    // Your pentHocQuaDaily hand rotates once every penthocciaday and ticks off hexhocciadays.
+    var hexHocQuaDailyMultiplier  =   6;    // Your hexHocQuaDaily  hand rotates once every hexhocciaday  and ticks off septhocciadays.
+
+    // Computed values
+    var numbNilHocCiaDaysPerDay  =  nilHocQuaDailyMultiplier;
+    var numbUnHocCiaDaysPerDay   =  unHocQuaDailyMultiplier    *  numbNilHocCiaDaysPerDay;
+    var numbBiHocCiaDaysPerDay   =  biHocQuaDailyMultiplier    *  numbUnHocCiaDaysPerDay;
+    var numbTriHocCiaDaysPerDay  =  triHocQuaDailyMultiplier   *  numbBiHocCiaDaysPerDay;
+    var numbQuadHocCiaDaysPerDay =  quadHocQuaDailyMultiplier  *  numbTriHocCiaDaysPerDay;
+    var numbPentHocCiaDaysPerDay =  pentHocQuaDailyMultiplier  *  numbQuadHocCiaDaysPerDay;
+    var numbHexHocCiaDaysPerDay  =  hexHocQuaDailyMultiplier   *  numbPentHocCiaDaysPerDay;
+
+    // This function is called to draw every frame of the animated clock
+    setInterval(showClock, 10);
+    function showClock() {
+        // Get the canvas and its graphics context
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        // Find out how many milliseconds it has been since midnight.
+        var date = new Date;
+        var currNumbMilliseconds = (((date.getHours()    * 60   +
+                                      date.getMinutes()) * 60   +
+                                     date.getSeconds())  * 1000 +
+                                    date.getMilliseconds());
+
+        var curFractionOfDay = currNumbMilliseconds / numbMillisecondsPerDay;
+
+        // convert this into how many times each hand has spun around since midnight
+        var currNumbNilHocCiaDayTurns   =  curFractionOfDay  *  numbNilHocCiaDaysPerDay;
+        var currNumbUnHocCiaDayTurns    =  curFractionOfDay  *  numbUnHocCiaDaysPerDay;
+        var currNumbBiHocCiaDayTurns    =  curFractionOfDay  *  numbBiHocCiaDaysPerDay;
+        var currNumbTriHocCiaDayTurns   =  curFractionOfDay  *  numbTriHocCiaDaysPerDay;
+        var currNumbQuadHocCiaDayTurns  =  curFractionOfDay  *  numbQuadHocCiaDaysPerDay;
+        var currNumbPentHocCiaDayTurns  =  curFractionOfDay  *  numbPentHocCiaDaysPerDay;
+        var currNumbHexHocCiaDayTurns   =  curFractionOfDay  *  numbHexHocCiaDaysPerDay;
+
+        // Start drawying
+
+        // Clear out the canvas, preperatory to drawing this frame.
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        OUTER_DIAL1();
+        OUTER_DIAL2();
+        drawHandArbors();
+
+        //makeHocCiaDailyMarkers(216*3, 1, '#C4D1D5',50);
+        //makeHocCiaDailyMarkers(36, 1, '#C4D1D5',50);
+	makeHocCiaDailyMarkers(216, 1, '#C4D1D5',15);
+        makeHocCiaDailyMarkers(36, 2.5, '#C4D1D5',7);
+        makeHocCiaDailyMarkers(6, 3, '#466B76',5);
+
+        //showHand(currNumbHexHocCiaDayTurns,  0.5, 1);
+        //showHand(currNumbPentHocCiaDayTurns, 0.25, 1);
+        //showHand(currNumbQuadHocCiaDayTurns, 0.5, 1);
+        //showHand(currNumbBiHocCiaDayTurns,   0.35, 1, 1);
+        showHand(currNumbNilHocCiaDayTurns,  1.5, 1, 0, numbNilHocCiaDaysPerDay);
+        showHand(currNumbUnHocCiaDayTurns,   0.5, 1.0, 0, numbUnHocCiaDaysPerDay);
+        showHand(currNumbBiHocCiaDayTurns,  0.5, 1, 1, 216);
+        //showHand(currNumbTriHocCiaDayTurns,  0.5, 1, 0, quadHocQuaDailyMultiplier);
+        //showHand(currNumbQuadHocCiaDayTurns,  0.5, 1, 0, pentHocQuaDailyMultiplier);
+        //showHand(currNumbPentHocCiaDayTurns,  0.5, 1, 0, hexHocQuaDailyMultiplier);
+
+        // This would be a jumping ISO seconds hand, if you ever want
+        // to compare the movement of your hands with a garden-variety
+        // seconds hand.
+        //showHand(date.getSeconds()/60, 0.5, 1);
+
+        function OUTER_DIAL1() {
+            ctx.save(); {
+                ctx.lineWidth = 1;
+                ctx.translate((canvas.width / 2), (canvas.height / 2));
+                ctx.beginPath(); {
+                    ctx.arc(0,0, clockReferenceSize + 10, 0, TAU);
+                    ctx.strokeStyle = '#92949C';
+                } ctx.stroke();
+            } ctx.restore();
+        }
+
+
+        function OUTER_DIAL2() {
+            ctx.save(); {
+                ctx.lineWidth = 1;
+                ctx.beginPath(); {
+                    ctx.translate((canvas.width/2), (canvas.height/2));
+                    ctx.arc(0,0, clockReferenceSize + 7, 0, TAU);
+                    ctx.strokeStyle = '#929BAC';
+                } ctx.stroke();
+            } ctx.restore();
+        }
+
+
+        // These are the central shafts which the hands of the clock
+        // (as it were) are attached to.
+        function drawHandArbors() {
+            ctx.beginPath(); {
+                ctx.arc(canvas.width/2, canvas.height/2, 2, 0, TAU);
+                ctx.lineWidth = 3;
+                ctx.fillStyle = '#353535';
+                ctx.strokeStyle = '#0C3D4A';
+            } ctx.stroke();
+        }
+
+        function makeHocCiaDailyMarkers(multiplier, width, style, scale) {
+            for (var i = 0; i < multiplier; i++) {
+                // calculate the angle this mark is at.
+		fraction = (i/multiplier);
+                //angle = (TAU * fraction) - Math.PI;
+                angle = (TAU * fraction)  - Math.PI/2
+                ctx.save(); {
+                    ctx.lineWidth = width;
+
+                    ctx.translate((canvas.width / 2), (canvas.height / 2));
+
+                    ctx.rotate(angle)
+
+                    ctx.beginPath(); {
+                        var x1 = 0;
+                        var y1 = clockReferenceSize;
+                        var x2 = 0;
+			var y2 = clockReferenceSize - (clockReferenceSize / scale);
+
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+
+                        ctx.strokeStyle = style;
+                    } ctx.stroke();
+                } ctx.restore();
+            }
+        }
+
+        // Used to draw the hands
+        function showHand(currTurns, widthOfHand, scale, jumping, multiplier) {
+	    if(jumping){
+		currTurns = currTurns * multiplier
+		currTurns = Math.floor(currTurns)
+		currTurns = currTurns / multiplier
+	    }
+
+            ctx.save(); {
+                // set frame of reference
+                ctx.translate((canvas.width / 2), (canvas.height / 2));
+                // this adjusts the 0 angle to the top of the clock
+                //angle = (TAU * currTurns) - Math.PI
+                angle = (TAU * currTurns) + Math.PI/2
+
+                ctx.rotate(-angle)
+
+                ctx.lineWidth = widthOfHand;
+
+                ctx.beginPath(); {
+                    // "head" of the hand
+                    ctx.moveTo(0,0);
+                    ctx.lineTo(0, clockReferenceSize/scale);
+
+                    // "tail" of the hand
+                    ctx.moveTo(0,0);
+                    ctx.lineTo(0,-20);
+
+                    ctx.strokeStyle = '#586A73';        // COLOR OF THE HAND.
+                } ctx.stroke();
+            } ctx.restore();
+        }
+    }
+}
+</script>
+</html>
